@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D rb;
     private Vector2 moveInput;
     private bool isGrounded;
+    private bool jumpPressed;
 
     void Start()
     {
@@ -26,10 +27,11 @@ public class PlayerMovement : MonoBehaviour
         moveInput.x = Input.GetAxisRaw("Horizontal");
         moveInput.Normalize(); // Prevent faster diagonal movement
 
-        // Jumping (only if grounded)
-        if (Input.GetKeyDown(KeyCode.UpArrow) && isGrounded)
+        // Jumping (only if grounded and not already jumping)
+        if (Input.GetKeyDown(KeyCode.UpArrow) && isGrounded && !jumpPressed)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpSpeed);
+            jumpPressed = true; // Mark jump as pressed
         }
     }
 
@@ -37,5 +39,11 @@ public class PlayerMovement : MonoBehaviour
     {
         // Apply horizontal movement while keeping the existing Y velocity
         rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
+
+        // Reset the jumpPressed flag when the player touches the ground again
+        if (isGrounded)
+        {
+            jumpPressed = false;
+        }
     }
 }
