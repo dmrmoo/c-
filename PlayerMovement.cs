@@ -3,9 +3,10 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     public float moveSpeed = 5f;
+    public float jumpSpeed = 10f;
     private Rigidbody2D rb;
     private Vector2 moveInput;
-    void Start()
+        void Start()
     {
         rb = GetComponent<Rigidbody2D>();
 
@@ -17,10 +18,16 @@ public class PlayerMovement : MonoBehaviour
         moveInput.x = Input.GetAxisRaw("Horizontal");
         moveInput.y = Input.GetAxisRaw("Vertical");
         moveInput.Normalize(); // Prevent faster diagonal movement
+
+        if(Input.GetKeyDown(KeyCode.UpArrow)){
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpSpeed);
+        }
     }
 
     void FixedUpdate()
     {
-        rb.linearVelocity = moveInput * moveSpeed;
+        rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
+
     }
 }
+
