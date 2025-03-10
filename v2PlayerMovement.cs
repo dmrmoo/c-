@@ -6,10 +6,10 @@ public class PlayerController : MonoBehaviour
     public float jumpSpeed = 7f;
 
     // To keep our rigid body
-    private Rigidbody rb;
+    private Rigidbody2D rb;
 
     // To keep the collider object
-    private Collider coll;
+    private Collider2D coll;
 
     // Flag to keep track of whether a jump started
     private bool pressedJump = false;
@@ -18,10 +18,10 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         // Get the rigid body component for later use
-        rb = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody2D>();
 
         // Get the player collider
-        coll = GetComponent<Collider>();
+        coll = GetComponent<Collider2D>();
     }
 
     // Update is called once per frame
@@ -37,35 +37,14 @@ public class PlayerController : MonoBehaviour
     // Make the player walk according to user input
     void WalkHandler()
     {
-        // Set x and z velocities to zero
-        rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
-
-        // Distance (speed = distance / time --> distance = speed * time)
-        float distance = walkSpeed * Time.deltaTime;
-
-        // Input on x ("Horizontal")
-        float hAxis = Input.GetAxis("Horizontal");
-
-        // Input on z ("Vertical")
-        float vAxis = Input.GetAxis("Vertical");
-
-        // Movement vector
-        Vector3 movement = new Vector3(hAxis * distance, 0f, vAxis * distance);
-
-        // Current position
-        Vector3 currPosition = transform.position;
-
-        // New position
-        Vector3 newPosition = currPosition + movement;
-
-        // Move the rigid body
-        rb.MovePosition(newPosition);
+        // Set y velocity to the current vertical velocity so it doesn't change
+        rb.linearVelocity = new Vector2(Input.GetAxis("Horizontal") * walkSpeed, rb.linearVelocity.y);
     }
 
     // Check whether the player can jump and make it jump
     void JumpHandler()
     {
-        // Jump axis
+        // Jump axis (typically for the space key or "Jump" axis)
         float jAxis = Input.GetAxis("Jump");
 
         // Is grounded
@@ -80,11 +59,9 @@ public class PlayerController : MonoBehaviour
                 // We are jumping on the current key press
                 pressedJump = true;
 
-                // Jumping vector
-                Vector3 jumpVector = new Vector3(0f, jumpSpeed, 0f);
+                // Jumping vector (only affects y direction)
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpSpeed);  // Adjusted for 2D
 
-                // Make the player jump by adding velocity
-                rb.linearVelocity = rb.linearVelocity + jumpVector;
             }
         }
         else
@@ -94,28 +71,27 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Check if the object is grounded
+    // Check if the object is grounded (for 2D)
     bool CheckGrounded()
     {
-        // Object size in x, y, and z
+        // Object size in x and y (no need for z in 2D)
         float sizeX = coll.bounds.size.x;
-        float sizeZ = coll.bounds.size.z;
         float sizeY = coll.bounds.size.y;
 
         // Position of the 4 bottom corners of the game object
-        // We add 0.01 in Y so that there is some distance between the point and the floor
-        Vector3 corner1 = transform.position + new Vector3(sizeX / 2, -sizeY / 2 + 0.01f, sizeZ / 2);
-        Vector3 corner2 = transform.position + new Vector3(-sizeX / 2, -sizeY / 2 + 0.01f, sizeZ / 2);
-        Vector3 corner3 = transform.position + new Vector3(sizeX / 2, -sizeY / 2 + 0.01f, -sizeZ / 2);
-        Vector3 corner4 = transform.position + new Vector3(-sizeX / 2, -sizeY / 2 + 0.01f, -sizeZ / 2);
+        // We add a small offset in Y to detect the ground just beneath the player
+        Vector2 corner1 = new Vector2(transform.position.x + sizeX / 2, transform.position.y - sizeY / 2 - 0.01f);
+        Vector2 corner2 = new Vector2(transform.position.x - sizeX / 2, transform.position.y - sizeY / 2 - 0.01f);
+        Vector2 corner3 = new Vector2(transform.position.x + sizeX / 2, transform.position.y - sizeY / 2 - 0.01f);
+        Vector2 corner4 = new Vector2(transform.position.x - sizeX / 2, transform.position.y - sizeY / 2 - 0.01f);
 
-        // Send a short ray down the cube on all 4 corners to detect ground
-        bool grounded1 = Physics.Raycast(corner1, Vector3.down, 0.01f);
-        bool grounded2 = Physics.Raycast(corner2, Vector3.down, 0.01f);
-        bool grounded3 = Physics.Raycast(corner3, Vector3.down, 0.01f);
-        bool grounded4 = Physics.Raycast(corner4, Vector3.down, 0.01f);
+        // Send a short ray down from the corners to detect the ground (2D)
+        bool grounded1 = Physics2D.Raycast(corner1, Vector2.down, 0.1f);
+        bool grounded2 = Physics2D.Raycast(corner2, Vector2.down, 0.1f);
+        bool grounded3 = Physics2D.Raycast(corner3, Vector2.down, 0.1f);
+        bool grounded4 = Physics2D.Raycast(corner4, Vector2.down, 0.1f);
 
         // If any corner is grounded, the object is grounded
         return (grounded1 || grounded2 || grounded3 || grounded4);
     }
-}
+}}
