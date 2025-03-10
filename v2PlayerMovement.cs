@@ -1,6 +1,7 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class PlayerController : MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
     public float walkSpeed = 8f;
     public float jumpSpeed = 7f;
@@ -13,6 +14,9 @@ public class PlayerController : MonoBehaviour
 
     // Flag to keep track of whether a jump started
     private bool pressedJump = false;
+
+    // Flag to keep track of whether the player is powered up
+    private bool poweredUp = false;
 
     // Use this for initialization
     void Start()
@@ -94,4 +98,25 @@ public class PlayerController : MonoBehaviour
         // If any corner is grounded, the object is grounded
         return (grounded1 || grounded2 || grounded3 || grounded4);
     }
-}}
+
+    // Method to increase the player's size
+    public void IncreaseSize()
+    {
+        if (poweredUp) return; // If the player is already powered up, do nothing
+        transform.localScale *= 1.5f; // Increase the size by 50%
+        poweredUp = true; // Set the powered up flag
+    }
+
+    public void Damage()
+    {
+        if (poweredUp)
+        {
+            transform.localScale /= 1.5f; // Decrease the size by 50%
+            poweredUp = false; // Reset the powered up flag
+        }
+        else
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Restart the level
+        }
+    }
+}
