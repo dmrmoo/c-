@@ -41,7 +41,7 @@ public class PlayerMovement : MonoBehaviour
         rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
 
         // Reset the jumpPressed flag when the player touches the ground again
-        if (isGrounded)
+        if (isGrounded && rb.linearVelocity.y <= 0)
         {
             jumpPressed = false;
         }
