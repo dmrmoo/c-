@@ -1,0 +1,81 @@
+using System.Collections;
+using UnityEngine;
+
+public class BedInteraction : MonoBehaviour
+{
+    public Transform bedPosition; // Assign this in the Inspector
+    private GameObject player;
+    private PlayerMotor playerMotor; // Reference to movement controller
+    private bool isNearBed = false;
+    private bool isSleeping = false;
+
+    void Start()
+    {
+        player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null)
+        {
+            Debug.LogError("Player not found! Make sure it is tagged 'Player'");
+            return;
+        }
+
+        playerMotor = player.GetComponent<PlayerMotor>();
+        if (playerMotor == null)
+        {
+            Debug.LogError("PlayerMotor not found on player!");
+        }
+    }
+
+    void Update()
+    {
+        if (isNearBed && Input.GetKeyDown(KeyCode.E) && !isSleeping)
+        {
+            StartCoroutine(LayDown());
+        }
+
+        if (isSleeping && Input.GetKeyDown(KeyCode.Q))
+        {
+            WakeUp();
+        }
+    }
+
+    private IEnumerator LayDown()
+    {
+        isSleeping = true;
+        if (playerMotor != null) playerMotor.canMove = false;
+
+        // Move and rotate player to bed position
+        player.transform.position = bedPosition.position;
+        player.transform.rotation = bedPosition.rotation;
+
+        // Optional: Add a fade to black here
+        yield return new WaitForSeconds(1f); // Simulate black screen duration
+
+        Debug.Log("Player is now sleeping.");
+    }
+
+    private void WakeUp()
+    {
+        isSleeping = false;
+        if (playerMotor != null) playerMotor.canMove = true;
+
+        Debug.Log("Player woke up.");
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isNearBed = true;
+            Debug.Log("Near bed");
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isNearBed = false;
+            Debug.Log("Left bed area");
+        }
+    }
+}
